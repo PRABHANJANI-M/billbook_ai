@@ -1,6 +1,10 @@
 import { createBrowserRouter } from 'react-router-dom'
 import MainLayout from '../layouts/MainLayout'
 
+//Login
+import Login from '../pages/Auth/Login'
+import ProtectedRoute from '../components/auth/ProtectedRoute'
+
 // Dashboard
 import Dashboard from '../pages/Dashboard/Dashboard'
 
@@ -90,9 +94,15 @@ import Reminders from '../pages/Settings/Reminders'
 import ActivityLog from '../pages/Settings/ActivityLog'
 
 export const router = createBrowserRouter([
+    { path: '/login', element: <Login /> },
   {
     path: '/',
-    element: <MainLayout />,
+    element: (
+      <ProtectedRoute>
+        <MainLayout />
+      </ProtectedRoute>
+    ),
+
     children: [
       { index: true, element: <Dashboard /> },
       { path: 'pos', element: <POSTerminal /> },
