@@ -1,23 +1,38 @@
 import { useState } from 'react'
 import { Package, ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { categories, brands, units, manufacturers } from '../../data/sampleProducts'
+import { useData } from '../../context/DataContext'
 import Button from '../../components/common/Button'
 
 export default function AddProduct() {
   const navigate = useNavigate()
+  const { categories, brands, units, manufacturers, dispatch } = useData()
   const [form, setForm] = useState({
     name: '', type: 'Simple', sku: '', barcode: '', hsn: '', category: '', brand: '',
     unit: '', manufacturer: '', costPrice: 0, sellPrice: 0, taxRate: 18, alertQty: 5,
     minQty: 1, qtyStep: 1, description: '', active: true,
   })
+  const [error, setError] = useState('')
 
   const set = (key, value) => setForm((f) => ({ ...f, [key]: value }))
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    console.log('New product:', form)
-    alert('Product saved (sample only — not persisted).')
+    if (!form.name || !form.sku) {
+      setError('Product Name and SKU are required.')
+      return
+    }
+    dispatch({
+      type: 'ADD_PRODUCT',
+      payload: {
+        ...form,
+        costPrice: Number(form.costPrice) || 0,
+        price: Number(form.sellPrice) || 0,
+        taxRate: Number(form.taxRate) || 0,
+        alertQty: Number(form.alertQty) || 0,
+        stock: Number(form.minQty) || 0,
+      },
+    })
     navigate('/products')
   }
 
@@ -118,6 +133,8 @@ export default function AddProduct() {
           <input type="checkbox" checked={form.active} onChange={(e) => set('active', e.target.checked)} />
           Active
         </label>
+
+        {error && <p className="text-xs text-red-500">{error}</p>}
 
         <Button type="submit" className="w-fit">✓ Save Product</Button>
       </form>

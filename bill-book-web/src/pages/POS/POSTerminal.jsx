@@ -1,13 +1,17 @@
 import { useState, useMemo } from 'react'
-import { ShoppingCart, Search, Trash2, ArrowLeft, ScanBarcode, ToggleLeft, Keyboard } from 'lucide-react'
-import { products as allProducts, categoryTabs } from '../../data/sampleProducts'
+import { ShoppingCart, Search, Trash2, ArrowLeft, ScanBarcode, Keyboard } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { useData } from '../../context/DataContext'
 import { formatCurrency } from '../../utils/format'
 
 export default function POSTerminal() {
+  const navigate = useNavigate()
+  const { products: allProducts, categoryTabs, dispatch } = useData()
   const [query, setQuery] = useState('')
   const [activeCat, setActiveCat] = useState('All')
   const [cart, setCart] = useState([])
   const [discountPct, setDiscountPct] = useState(0)
+  const [paymentMode, setPaymentMode] = useState('Cash')
 
   const filtered = useMemo(() => {
     return allProducts.filter((p) => {
@@ -15,12 +19,13 @@ export default function POSTerminal() {
       const matchesQuery = p.name.toLowerCase().includes(query.toLowerCase())
       return matchesCat && matchesQuery
     })
-  }, [query, activeCat])
+  }, [query, activeCat, allProducts])
 
   const addToCart = (product) => {
     setCart((prev) => {
       const exists = prev.find((i) => i.id === product.id)
       if (exists) {
+        if (exists.qty >= product.stock) return prev // can't oversell available stock
         return prev.map((i) => (i.id === product.id ? { ...i, qty: i.qty + 1 } : i))
       }
       return [...prev, { ...product, qty: 1 }]
@@ -32,7 +37,8 @@ export default function POSTerminal() {
       setCart((prev) => prev.filter((i) => i.id !== id))
       return
     }
-    setCart((prev) => prev.map((i) => (i.id === id ? { ...i, qty } : i)))
+    const stock = allProducts.find((p) => p.id === id)?.stock ?? 0
+    setCart((prev) => prev.map((i) => (i.id === id ? { ...i, qty: Math.min(qty, stock) } : i)))
   }
 
   const removeItem = (id) => setCart((prev) => prev.filter((i) => i.id !== id))
@@ -41,6 +47,22 @@ export default function POSTerminal() {
   const tax = cart.reduce((sum, i) => sum + (i.price * i.qty * i.taxRate) / 100, 0)
   const discount = (subtotal * discountPct) / 100
   const total = subtotal + tax - discount
+
+  const handleCheckout = () => {
+    if (cart.length === 0) return
+    dispatch({
+      type: 'ADD_SALE',
+      payload: {
+        customer: 'Walk-in Customer',
+        paid: total, // POS sales are settled at the counter
+        lines: cart.map((i) => ({ productId: i.id, name: i.name, qty: i.qty, price: i.price, taxRate: i.taxRate })),
+      },
+    })
+    setCart([])
+    setDiscountPct(0)
+    alert(`Sale completed — ${formatCurrency(total)} paid via ${paymentMode}.`)
+    navigate('/sales/invoices')
+  }
 
   return (
     <div className="flex gap-4 h-[calc(100vh-8rem)]">
@@ -196,12 +218,22 @@ export default function POSTerminal() {
         <div className="px-4 pb-4 flex flex-col gap-2">
           <div className="grid grid-cols-4 gap-1.5">
             {['Cash', 'Card', 'UPI', 'Bank'].map((m) => (
-              <button key={m} className="border border-gray-200 rounded-lg py-1.5 text-[11px] text-gray-600">
+              <button
+                key={m}
+                onClick={() => setPaymentMode(m)}
+                className={`border rounded-lg py-1.5 text-[11px] ${
+                  paymentMode === m ? 'bg-indigo-600 text-white border-indigo-600' : 'border-gray-200 text-gray-600'
+                }`}
+              >
                 {m}
               </button>
             ))}
           </div>
-          <button className="bg-indigo-600 text-white rounded-lg py-2.5 text-sm font-semibold">
+          <button
+            onClick={handleCheckout}
+            disabled={cart.length === 0}
+            className="bg-indigo-600 text-white rounded-lg py-2.5 text-sm font-semibold disabled:opacity-40"
+          >
             ✓ Checkout
           </button>
           <label className="flex items-center gap-1.5 text-xs text-gray-500">

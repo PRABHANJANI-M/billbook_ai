@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, ShoppingCart, Package, Boxes, Receipt,
   ShoppingBag, Wallet, Users, Landmark, FileBarChart, Settings,
@@ -8,9 +8,10 @@ import {
   ClipboardList, RotateCcw, HandCoins, FileSpreadsheet, Building2,
   Search as SearchIcon, BookOpen, TrendingUp,
   AlertTriangle, XCircle, Activity, BarChart3, PieChart, Zap,
-  DollarSign, FileClock, Sliders, Store, KeyRound, Layers, Bell, History, X
+  DollarSign, FileClock, Sliders, Store, KeyRound, Layers, Bell, History, X, LogOut
 } from 'lucide-react'
 import { useState } from 'react'
+import { useAuth } from '../../context/AuthContext'
 
 const NavItem = ({ to, icon: Icon, label, onNavigate }) => (
   <NavLink
@@ -45,6 +46,12 @@ const Group = ({ title, children, defaultOpen = false }) => {
 
 export default function Sidebar({ open, onClose }) {
   const nav = onClose // shorthand passed to NavItems so a click closes the drawer on mobile
+  const { logout } = useAuth()
+  const navigate = useNavigate()
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+  }
 
   const content = (
     <>
@@ -144,7 +151,9 @@ export default function Sidebar({ open, onClose }) {
       </nav>
 
       <div className="p-3 border-t border-gray-100 shrink-0">
-        <button className="text-xs text-red-500 hover:underline">Logout</button>
+        <button onClick={handleLogout} className="text-xs text-red-500 hover:underline flex items-center gap-1">
+          <LogOut size={13} /> Logout
+        </button>
       </div>
     </>
   )

@@ -2,21 +2,27 @@ import { useState } from 'react'
 import { ShoppingBag, ArrowLeft, Plus, Trash2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import Button from '../../components/common/Button'
-import { products } from '../../data/sampleProducts'
+import { useData } from '../../context/DataContext'
 import { formatCurrency } from '../../utils/format'
 
 export default function NewPurchase() {
   const navigate = useNavigate()
-  const [lines, setLines] = useState([{ product: '', qty: 1, cost: 0 }])
+  const { products, dispatch } = useData()
+  const [supplier, setSupplier] = useState('senthil agency')
+  const [lines, setLines] = useState([{ productId: null, product: '', qty: 1, cost: 0 }])
+  const [error, setError] = useState('')
 
-  const addLine = () => setLines([...lines, { product: '', qty: 1, cost: 0 }])
+  const addLine = () => setLines([...lines, { productId: null, product: '', qty: 1, cost: 0 }])
   const removeLine = (i) => setLines(lines.filter((_, idx) => idx !== i))
   const updateLine = (i, key, value) => {
     const copy = [...lines]
     copy[i][key] = value
     if (key === 'product') {
       const p = products.find((p) => p.name === value)
-      if (p) copy[i].cost = p.costPrice
+      if (p) {
+        copy[i].productId = p.id
+        copy[i].cost = p.costPrice
+      }
     }
     setLines(copy)
   }
@@ -26,7 +32,12 @@ export default function NewPurchase() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    alert('Purchase recorded (sample only).')
+    const validLines = lines.filter((l) => l.productId && l.qty > 0)
+    if (validLines.length === 0) {
+      setError('Add at least one product line.')
+      return
+    }
+    dispatch({ type: 'ADD_PURCHASE', payload: { supplier, paid: total, lines: validLines } })
     navigate('/purchases')
   }
 
@@ -42,7 +53,7 @@ export default function NewPurchase() {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="text-xs text-gray-500">Supplier</label>
-            <select className="input mt-1">
+            <select value={supplier} onChange={(e) => setSupplier(e.target.value)} className="input mt-1">
               <option>senthil agency</option>
               <option>ELITE POWER CORPORATIONS</option>
             </select>
@@ -79,6 +90,8 @@ export default function NewPurchase() {
           <div className="flex gap-8"><span className="text-gray-500">Tax (18%)</span><span>{formatCurrency(tax)}</span></div>
           <div className="flex gap-8 font-bold text-base"><span>Total</span><span>{formatCurrency(total)}</span></div>
         </div>
+
+        {error && <p className="text-xs text-red-500">{error}</p>}
 
         <Button type="submit" className="w-fit">Save Purchase</Button>
       </form>

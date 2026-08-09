@@ -2,32 +2,50 @@ import { useState } from 'react'
 import { ReceiptText, ArrowLeft, Plus, Trash2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import Button from '../../components/common/Button'
-import { products } from '../../data/sampleProducts'
+import { useData } from '../../context/DataContext'
 import { formatCurrency } from '../../utils/format'
 
 export default function NewInvoice() {
   const navigate = useNavigate()
-  const [lines, setLines] = useState([{ product: '', qty: 1, price: 0 }])
+  const { products, dispatch } = useData()
+  const [customer, setCustomer] = useState('Walk-in Customer')
+  const [lines, setLines] = useState([{ productId: null, product: '', qty: 1, price: 0, taxRate: 18, stock: 0 }])
+  const [error, setError] = useState('')
 
-  const addLine = () => setLines([...lines, { product: '', qty: 1, price: 0 }])
+  const addLine = () => setLines([...lines, { productId: null, product: '', qty: 1, price: 0, taxRate: 18, stock: 0 }])
   const removeLine = (i) => setLines(lines.filter((_, idx) => idx !== i))
   const updateLine = (i, key, value) => {
     const copy = [...lines]
     copy[i][key] = value
     if (key === 'product') {
       const p = products.find((p) => p.name === value)
-      if (p) copy[i].price = p.price
+      if (p) {
+        copy[i].productId = p.id
+        copy[i].price = p.price
+        copy[i].taxRate = p.taxRate
+        copy[i].stock = p.stock
+      }
     }
     setLines(copy)
   }
 
   const subtotal = lines.reduce((sum, l) => sum + l.qty * l.price, 0)
-  const tax = subtotal * 0.18
+  const tax = lines.reduce((sum, l) => sum + (l.qty * l.price * l.taxRate) / 100, 0)
   const total = subtotal + tax
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    alert('Invoice created (sample only).')
+    const validLines = lines.filter((l) => l.productId && l.qty > 0)
+    if (validLines.length === 0) {
+      setError('Add at least one product line.')
+      return
+    }
+    const overStock = validLines.find((l) => l.qty > l.stock)
+    if (overStock) {
+      setError(`Only ${overStock.stock} in stock for "${overStock.product}".`)
+      return
+    }
+    dispatch({ type: 'ADD_SALE', payload: { customer, paid: total, lines: validLines } })
     navigate('/sales/invoices')
   }
 
@@ -44,7 +62,11 @@ export default function NewInvoice() {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="text-xs text-gray-500">Customer</label>
-            <select className="input mt-1"><option>Walk-in Customer</option></select>
+            <select value={customer} onChange={(e) => setCustomer(e.target.value)} className="input mt-1">
+              <option>Walk-in Customer</option>
+              <option>senthil agency</option>
+              <option>ELITE POWER CORPORATIONS</option>
+            </select>
           </div>
           <div>
             <label className="text-xs text-gray-500">Invoice Date</label>
@@ -78,6 +100,8 @@ export default function NewInvoice() {
           <div className="flex gap-8"><span className="text-gray-500">Tax (18%)</span><span>{formatCurrency(tax)}</span></div>
           <div className="flex gap-8 font-bold text-base"><span>Total</span><span>{formatCurrency(total)}</span></div>
         </div>
+
+        {error && <p className="text-xs text-red-500">{error}</p>}
 
         <Button type="submit" className="w-fit">Create Invoice</Button>
       </form>

@@ -4,11 +4,12 @@ import PageHeader from '../../components/common/PageHeader'
 import DataTable from '../../components/common/DataTable'
 import Button from '../../components/common/Button'
 import Badge from '../../components/common/Badge'
-import { invoices } from '../../data/sampleSales'
+import { useData } from '../../context/DataContext'
 import { formatCurrency } from '../../utils/format'
 
 export default function AllInvoices() {
   const navigate = useNavigate()
+  const { invoices } = useData()
   const statusColor = { Paid: 'green', Partial: 'yellow', Unpaid: 'red' }
   return (
     <div>

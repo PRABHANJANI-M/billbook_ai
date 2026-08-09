@@ -4,11 +4,12 @@ import PageHeader from '../../components/common/PageHeader'
 import DataTable from '../../components/common/DataTable'
 import Button from '../../components/common/Button'
 import Badge from '../../components/common/Badge'
-import { purchases } from '../../data/samplePurchases'
+import { useData } from '../../context/DataContext'
 import { formatCurrency } from '../../utils/format'
 
 export default function AllPurchases() {
   const navigate = useNavigate()
+  const { purchases } = useData()
   const statusColor = { Paid: 'green', Partial: 'yellow', Unpaid: 'red' }
   return (
     <div>

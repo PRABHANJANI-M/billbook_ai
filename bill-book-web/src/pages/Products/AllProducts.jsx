@@ -1,21 +1,26 @@
 import { useState, useMemo } from 'react'
-import { Package, PlusSquare, Search } from 'lucide-react'
+import { Package, PlusSquare, Search, Trash2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import PageHeader from '../../components/common/PageHeader'
 import DataTable from '../../components/common/DataTable'
 import Badge from '../../components/common/Badge'
 import Button from '../../components/common/Button'
-import { products } from '../../data/sampleProducts'
+import { useData } from '../../context/DataContext'
 import { formatCurrency } from '../../utils/format'
 
 export default function AllProducts() {
   const [query, setQuery] = useState('')
   const navigate = useNavigate()
+  const { products, dispatch } = useData()
 
   const filtered = useMemo(
     () => products.filter((p) => p.name.toLowerCase().includes(query.toLowerCase())),
-    [query]
+    [products, query]
   )
+
+  const handleDelete = (id) => {
+    if (confirm('Delete this product?')) dispatch({ type: 'DELETE_PRODUCT', payload: { id } })
+  }
 
   return (
     <div>
@@ -51,6 +56,11 @@ export default function AllProducts() {
             </Badge>
           )},
           { key: 'active', label: 'Status', render: (r) => <Badge color={r.active ? 'green' : 'gray'}>{r.active ? 'Active' : 'Inactive'}</Badge> },
+          { key: 'actions', label: '', render: (r) => (
+            <button onClick={() => handleDelete(r.id)} title="Delete product">
+              <Trash2 size={14} className="text-red-400 hover:text-red-600" />
+            </button>
+          )},
         ]}
         data={filtered}
       />
