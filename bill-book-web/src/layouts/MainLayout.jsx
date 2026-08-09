@@ -4,11 +4,11 @@ import { Outlet } from 'react-router-dom'
 
 export default function MainLayout() {
   return (
-    <div className="flex bg-gray-50 min-h-screen">
+    <div className="flex min-h-screen bg-gray-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
       <Sidebar />
       <div className="flex-1 flex flex-col">
         <Topbar />
-        <main className="p-6">
+        <main className="flex-1 p-6 bg-gray-50 dark:bg-slate-950">
           <Outlet />
         </main>
       </div>

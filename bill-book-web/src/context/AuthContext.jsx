@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 
 const sampleUsers = [
   { id: 1, name: 'System Administrator', email: 'admin@erp.local', role: 'Super Admin' },
@@ -7,10 +7,31 @@ const sampleUsers = [
   { id: 4, name: 'kumar', email: 'cashier@erp.local', role: 'Cashier' },
 ]
 
+const getStoredUser = () => {
+  if (typeof window === 'undefined') return null
+
+  try {
+    const stored = window.localStorage.getItem('truezor-current-user')
+    return stored ? JSON.parse(stored) : null
+  } catch {
+    return null
+  }
+}
+
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [currentUser, setCurrentUser] = useState(null)
+  const [currentUser, setCurrentUser] = useState(getStoredUser)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    if (currentUser) {
+      window.localStorage.setItem('truezor-current-user', JSON.stringify(currentUser))
+    } else {
+      window.localStorage.removeItem('truezor-current-user')
+    }
+  }, [currentUser])
 
   const login = (userId) => {
     const user = sampleUsers.find((u) => u.id === Number(userId))
@@ -25,11 +46,9 @@ export function AuthProvider({ children }) {
     if (user) setCurrentUser(user)
   }
 
-  return (
-    <AuthContext.Provider value={{ currentUser, users: sampleUsers, login, logout, switchUser }}>
-      {children}
-    </AuthContext.Provider>
-  )
+  const value = useMemo(() => ({ currentUser, users: sampleUsers, login, logout, switchUser }), [currentUser])
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 export const useAuth = () => useContext(AuthContext)
