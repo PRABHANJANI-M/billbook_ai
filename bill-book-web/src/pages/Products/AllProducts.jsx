@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { Package, PlusSquare, Search, Trash2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import PageHeader from '../../components/common/PageHeader'
 import DataTable from '../../components/common/DataTable'
 import Badge from '../../components/common/Badge'
@@ -9,13 +10,26 @@ import { useData } from '../../context/DataContext'
 import { formatCurrency } from '../../utils/format'
 
 export default function AllProducts() {
-  const [query, setQuery] = useState('')
+  const [allProductsSearch, setAllProductsSearch] = useState('')
   const navigate = useNavigate()
   const { products, dispatch } = useData()
+  const location = useLocation()
+  const inputRef = useRef(null)
+
+  // Initialize query from URL param `q` so sidebar search can navigate here
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const q = params.get('q') || ''
+    setAllProductsSearch(q)
+    // focus the search input when navigated from sidebar
+    if (q && inputRef.current) {
+      inputRef.current.focus()
+    }
+  }, [location.search])
 
   const filtered = useMemo(
-    () => products.filter((p) => p.name.toLowerCase().includes(query.toLowerCase())),
-    [products, query]
+    () => products.filter((p) => p.name.toLowerCase().includes(allProductsSearch.toLowerCase())),
+    [products, allProductsSearch]
   )
 
   const handleDelete = (id) => {
@@ -37,8 +51,13 @@ export default function AllProducts() {
       <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2 mb-4 max-w-sm">
         <Search size={15} className="text-gray-400" />
         <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          ref={inputRef}
+          value={allProductsSearch}
+          onChange={(e) => {
+            e.stopPropagation()
+            console.log('AllProducts search changed:', e.target.value)
+            setAllProductsSearch(e.target.value)
+          }}
           placeholder="Search products..."
           className="outline-none text-sm flex-1"
         />

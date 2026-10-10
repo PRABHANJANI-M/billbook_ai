@@ -31,25 +31,15 @@ export default function Topbar({ onMenuClick }) {
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-gray-200 bg-white/95 px-3 backdrop-blur sm:px-6 dark:border-slate-800 dark:bg-slate-900/95">
       <div className="flex min-w-0 flex-1 items-center gap-2">
-        <button onClick={onMenuClick} className="shrink-0 rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-slate-800 lg:hidden">
+        <button onClick={onMenuClick} className="shrink-0 rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100 md:hidden">
           <Menu size={22} />
         </button>
 
-        <div className="hidden w-full max-w-md items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 sm:flex dark:border-slate-700 dark:bg-slate-800">
-          <Search size={16} className="shrink-0 text-gray-400" />
-          <input
-            placeholder="Search products, invoices..."
-            className="w-full bg-transparent text-sm text-gray-700 outline-none dark:text-slate-200"
-          />
-        </div>
-
-        <button className="ml-1 text-gray-400 sm:hidden">
-          <Search size={20} />
-        </button>
+        {/* logo text removed — sidebar provides branding */}
       </div>
 
       <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-        <button className="hidden rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-600 dark:border-slate-700 dark:text-slate-300 md:block">
+        <button className="hidden rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-600 transition hover:bg-gray-50 hover:text-gray-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100 md:block">
           Main Store
         </button>
 
@@ -61,7 +51,7 @@ export default function Topbar({ onMenuClick }) {
           {dark ? <Moon size={17} /> : <Sun size={17} />}
         </button>
 
-        <button className="rounded-lg border border-gray-200 p-2 text-gray-400 transition hover:text-gray-600 dark:border-slate-700 dark:text-slate-300 dark:hover:text-slate-100">
+        <button className="rounded-lg border border-gray-200 p-2 text-gray-400 transition hover:bg-gray-50 hover:text-gray-600 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100">
           <Bell size={18} />
         </button>
 
@@ -99,7 +89,7 @@ export default function Topbar({ onMenuClick }) {
                         switchUser(user.id)
                         setMenuOpen(false)
                       }}
-                      className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-xs text-gray-600 transition hover:bg-gray-50 dark:text-slate-300 dark:hover:bg-slate-800"
+                      className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-xs text-gray-600 transition hover:bg-gray-50 hover:text-gray-800 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
                     >
                       <User size={13} />
                       <span className="flex-1">{user.name}</span>

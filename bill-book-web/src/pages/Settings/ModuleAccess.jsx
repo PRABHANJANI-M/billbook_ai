@@ -7,11 +7,11 @@ function Toggle({ checked, onChange }) {
   return (
     <button
       onClick={onChange}
-      className={`w-9 h-5 rounded-full relative transition-colors ${checked ? 'bg-indigo-600' : 'bg-gray-200'}`}
+      className={`w-12 h-7 rounded-full relative transition-colors flex items-center ${checked ? 'bg-indigo-600' : 'bg-gray-200'}`}
     >
       <span
-        className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
-          checked ? 'translate-x-4' : 'translate-x-0.5'
+        className={`absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+          checked ? 'translate-x-6' : 'translate-x-0'
         }`}
       />
     </button>
@@ -47,7 +47,9 @@ export default function ModuleAccess() {
                 <td className="px-4 py-3 font-medium text-gray-700">{mod}</td>
                 {roleNames.map((role) => (
                   <td key={role} className="px-4 py-3 text-center">
-                    <Toggle checked={matrix[mod]?.[role]} onChange={() => toggle(mod, role)} />
+                    <div className="flex items-center justify-center h-16">
+                      <Toggle checked={matrix[mod]?.[role]} onChange={() => toggle(mod, role)} />
+                    </div>
                   </td>
                 ))}
               </tr>
